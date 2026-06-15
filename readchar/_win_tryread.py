@@ -2,6 +2,7 @@ import msvcrt
 
 from ._config import config
 
+
 # based on _win_read.py
 
 
@@ -10,28 +11,30 @@ _old_settings = None
 
 def claim_terminal() -> None:
     """Does nothing on Windows.
-    Calls to this function cannot be nested, matching the behavior of the posix version."""
+    Calls to this function cannot be nested, matching the behavior of the posix version.
+    """
     global _old_settings
-    
-    if _old_settings != None:
-        raise RuntimeError("Terminal already claimed; claim_terminal() cannot be nested")
-    
+
+    if _old_settings is not None:
+        raise RuntimeError(
+            "Terminal already claimed; claim_terminal() cannot be nested"
+        )
+
     _old_settings = True
 
-    
+
 def unclaim_terminal() -> None:
     """Does nothing on Windows.
     Closes claim_terminal(), matching the behavior of the posix version."""
     global _old_settings
 
     _old_settings = None
-    
+
 
 def tryreadchar() -> str | None:
     """Tries to read a single utf8-character from the input stream.
     If the stream is empty, returns None."""
 
-    
     # check for input
     if msvcrt.kbdhit():
         # read a single wide character from the input
@@ -47,9 +50,9 @@ def tryreadkey() -> str | None:
     # read first character
     ch = tryreadchar()
 
-    if ch == None:
+    if ch is None:
         return None
-    
+
     # keys like CTRL+C should cause a interrupt
     if ch in config.INTERRUPT_KEYS:
         raise KeyboardInterrupt
@@ -59,12 +62,12 @@ def tryreadkey() -> str | None:
     if ch in "\x00\xe0":
         # read the second half
         # we always return the 0x00 prefix, this avoids duplications in the key module
-        ch = "\x00" + readchar()
+        ch = "\x00" + tryreadchar()
 
     # parse unicode surrogates
     # https://docs.python.org/3/c-api/unicode.html#c.Py_UNICODE_IS_SURROGATE
     if "\uD800" <= ch <= "\uDFFF":
-        ch += readchar()
+        ch += tryreadchar()
 
         # combine the characters into a single utf-16 encoded string.
         # this prevents the character from being treated as a surrogate pair again.
