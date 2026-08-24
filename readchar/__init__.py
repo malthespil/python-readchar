@@ -35,3 +35,6 @@ elif platform in ("win32", "cygwin"):
     from ._win_tryread import claim_terminal, tryreadchar, tryreadkey, unclaim_terminal
 else:
     raise NotImplementedError(f"The platform {platform} is not supported yet")
+
+
+from ._base_tryread import TerminalSession
